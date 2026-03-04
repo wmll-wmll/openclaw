@@ -14,16 +14,18 @@ LABEL org.opencontainers.image.base.name="docker.io/library/node:22-bookworm" \
   org.opencontainers.image.description="OpenClaw gateway and CLI runtime container image"
 
 # Install Bun (required for build scripts)
-RUN curl -fsSL https://bun.sh/install | bash
+RUN npm config set registry https://registry.npmmirror.com && \
+    curl -fsSL https://bun.sh/install | bash
 ENV PATH="/root/.bun/bin:${PATH}"
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 RUN chown node:node /app
 
 ARG OPENCLAW_DOCKER_APT_PACKAGES=""
 RUN if [ -n "$OPENCLAW_DOCKER_APT_PACKAGES" ]; then \
+      sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources && \
       apt-get update && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $OPENCLAW_DOCKER_APT_PACKAGES && \
       apt-get clean && \
@@ -38,7 +40,8 @@ COPY --chown=node:node scripts ./scripts
 USER node
 # Reduce OOM risk on low-memory hosts during dependency installation.
 # Docker builds on small VMs may otherwise fail with "Killed" (exit 137).
-RUN NODE_OPTIONS=--max-old-space-size=2048 pnpm install --frozen-lockfile
+RUN pnpm config set registry https://registry.npmmirror.com && \
+    NODE_OPTIONS=--max-old-space-size=2048 pnpm install --frozen-lockfile
 
 # Optionally install Chromium and Xvfb for browser automation.
 # Build with: docker build --build-arg OPENCLAW_INSTALL_BROWSER=1 ...
