@@ -29,8 +29,8 @@ if (-not (Test-Path "$ProjectDir\node_modules")) {
   pnpm install --frozen-lockfile
 }
 Write-Host "启动网关: 绑定=$Bind 端口=$Port"
-$argsList = @("openclaw", "gateway", "--bind", $Bind, "--port", "$Port", "--allow-unconfigured")
-$proc = Start-Process -FilePath "pnpm" -ArgumentList $argsList -WorkingDirectory $ProjectDir -PassThru
+$cmdArgs = "/c pnpm openclaw gateway --bind $Bind --port $Port --allow-unconfigured"
+$proc = Start-Process -FilePath "cmd.exe" -ArgumentList $cmdArgs -WorkingDirectory $ProjectDir -PassThru
 Start-Sleep -Seconds 3
 try {
   $health = Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:$Port/healthz" -TimeoutSec 5
