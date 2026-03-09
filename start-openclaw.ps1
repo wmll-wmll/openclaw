@@ -28,14 +28,9 @@ if (-not (Test-Path "$ProjectDir\node_modules")) {
   $env:OPENCLAW_PREFER_PNPM = "1"
   pnpm install --frozen-lockfile
 }
-Write-Host "构建项目"
-pnpm build
-Write-Host "构建 UI"
-$env:OPENCLAW_PREFER_PNPM = "1"
-pnpm ui:build
 Write-Host "启动网关: 绑定=$Bind 端口=$Port"
-$argsList = @("openclaw.mjs", "gateway", "--bind", $Bind, "--port", "$Port", "--allow-unconfigured")
-$proc = Start-Process -FilePath "node" -ArgumentList $argsList -WorkingDirectory $ProjectDir -PassThru
+$argsList = @("openclaw", "gateway", "--bind", $Bind, "--port", "$Port", "--allow-unconfigured")
+$proc = Start-Process -FilePath "pnpm" -ArgumentList $argsList -WorkingDirectory $ProjectDir -PassThru
 Start-Sleep -Seconds 3
 try {
   $health = Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:$Port/healthz" -TimeoutSec 5
