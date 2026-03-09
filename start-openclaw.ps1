@@ -24,10 +24,8 @@ Write-Host "启用 Corepack 并激活 pnpm"
 corepack enable | Out-Null
 corepack prepare pnpm@latest --activate | Out-Null
 Write-Host "安装依赖"
-if (-not (Test-Path "$ProjectDir\node_modules")) {
-  $env:OPENCLAW_PREFER_PNPM = "1"
-  pnpm install --frozen-lockfile
-}
+$env:OPENCLAW_PREFER_PNPM = "1"
+pnpm install --frozen-lockfile
 Write-Host "启动网关: 绑定=$Bind 端口=$Port"
 $cmdArgs = "/c pnpm openclaw gateway --bind $Bind --port $Port --allow-unconfigured"
 $proc = Start-Process -FilePath "cmd.exe" -ArgumentList $cmdArgs -WorkingDirectory $ProjectDir -PassThru
